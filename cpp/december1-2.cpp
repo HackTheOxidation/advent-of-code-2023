@@ -3,18 +3,36 @@
 #include <ranges>
 #include <regex>
 #include <string>
+#include <string_view>
+#include <unordered_map>
 
 const static std::regex numbers_as_words(
-    "(?<1>one)|(?<2>two)|(?<3>three)|(?<4>four)|(?<5>five)|(?<6>six)|(?<7>seven)|(?<8>eight)|(?<9>nine)",
+    "one|two|three|four|five|six|seven|eight|nine",
     std::regex_constants::icase);
+
+const static std::unordered_map<std::string_view, std::string_view> word_to_number_map = {
+  {"one", "1"},
+  {"two", "2"},
+  {"three", "3"},
+  {"four", "4"},
+  {"five", "5"},
+  {"six", "6"},
+  {"seven", "7"},
+  {"eight", "8"},
+  {"nine", "9"}
+};
 
 constexpr bool is_digit(const char c) {
   return '0' <= c && c <= '9';
 }
 
-std::string numerize_line(const std::string line) {
-  if (std::regex_search(line, numbers_as_words)){
-    return numerize_line(std::regex_replace(line, numbers_as_words, "$+", std::regex_constants::format_first_only));
+std::string numerize_line(std::string line) {
+  std::smatch result;
+  std::regex_match(line, result, numbers_as_words);
+
+  if (!result.empty()){
+    auto replacement = word_to_number_map.at(result.str()).data();
+    return numerize_line(std::regex_replace(line, numbers_as_words, replacement, std::regex_constants::format_first_only));
   }   
 
   return line;
