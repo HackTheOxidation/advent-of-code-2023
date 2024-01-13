@@ -8,7 +8,7 @@
 
 const static std::regex numbers_as_words(
     "one|two|three|four|five|six|seven|eight|nine",
-    std::regex_constants::icase);
+    std::regex_constants::icase | std::regex_constants::ECMAScript);
 
 const static std::unordered_map<std::string_view, std::string_view> word_to_number_map = {
   {"one", "1"},
@@ -28,13 +28,13 @@ constexpr bool is_digit(const char c) {
 
 std::string numerize_line(std::string line) {
   std::smatch result;
-  std::regex_match(line, result, numbers_as_words);
-
-  if (!result.empty()){
-    auto replacement = word_to_number_map.at(result.str()).data();
-    return numerize_line(std::regex_replace(line, numbers_as_words, replacement, std::regex_constants::format_first_only));
-  }   
-
+  for (std::smatch result; 
+      std::regex_search(line, result, numbers_as_words); 
+      line = std::regex_replace(line, numbers_as_words, 
+        word_to_number_map.at(result.str()).data(), 
+        std::regex_constants::format_first_only))
+    ; 
+  
   return line;
 }
 
@@ -53,17 +53,12 @@ std::size_t get_number(const std::string line) {
 void read_sum(const std::string filename) {
   std::ifstream istrm(filename);
 
-  if (!istrm.is_open()) {
-    std::cout << ("File: " + filename + " does not exist.");
+  if (!istrm.is_open()) 
     return;
-  } 
 
-  std::string line;
   std::size_t sum = 0;
-  while (std::getline(istrm, line)) {
-    sum += get_number(numerize_line(line));
-  }
-
+  for (std::string line; std::getline(istrm, line); sum += get_number(numerize_line(line)))
+    ;
   std::cout << sum << '\n';
 }
 
