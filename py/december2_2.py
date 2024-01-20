@@ -3,6 +3,7 @@ import sys
 
 from dataclasses import dataclass
 from enum import Enum
+from math import prod
 
 GAME_RE = re.compile(r"Game (?P<gid>\d*): ")
 DRAW_RE = re.compile(r"((?P<no>\d*) (?P<colour>(blue|red|green)))(,)*")
@@ -33,8 +34,14 @@ class Game:
 
         return True
 
-    def minimum_cubes(self) -> Draw:
-        pass
+    def minimum_power(self) -> Draw:
+        blue, red, green = 0, 0, 0
+        for draw in self._draws:
+            blue = max(draw.blue, blue)
+            red = max(draw.red, red)
+            blue = max(draw.blue, blue)
+            
+        return prod((blue, red, green))
 
     def __repr__(self):
         return f"<Game draws={self._draws.__repr__}>"
@@ -49,6 +56,6 @@ if __name__ == '__main__':
     filename = sys.argv[1]
     games = (Game.from_string(line) for line in read_file(filename))
     bag = Draw(red=12, green=13, blue=14)
-    gid_sum = sum(game._gid for game in games if game.is_possible(bag))
-    print(gid_sum)
+    min_power = sum(map(lambda g: g.minimum_power(), games))
+    print(min_power)
 
