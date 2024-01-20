@@ -33,6 +33,9 @@ class Game:
 
         return True
 
+    def minimum_cubes(self) -> Draw:
+        pass
+
     def __repr__(self):
         return f"<Game draws={self._draws.__repr__}>"
 
