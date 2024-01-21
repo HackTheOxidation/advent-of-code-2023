@@ -2,7 +2,7 @@ import re
 import sys
 
 from dataclasses import dataclass
-from enum import Enum
+from functools import reduce
 from math import prod
 
 GAME_RE = re.compile(r"Game (?P<gid>\d*): ")
@@ -14,6 +14,11 @@ class Draw:
     blue: int = 0
     red: int = 0 
     green: int = 0
+
+    def __iter__(self):
+        yield self.blue
+        yield self.red
+        yield self.green
 
 
 class Game:
@@ -28,20 +33,11 @@ class Game:
         return eval(re.sub(GAME_RE, r"Game(\g<gid>, Draw(", constructed) + '))')
 
     def is_possible(self, bag: Draw) -> bool:
-        for draw in self._draws:
-            if bag.blue < draw.blue or bag.green < draw.green or bag.red < draw.red:
-                return False
-
-        return True
+        return all(map(lambda d: all(l >= r for l, r in zip(bag, d)),
+                       self._draws))
 
     def minimum_power(self) -> Draw:
-        blue, red, green = 0, 0, 0
-        for draw in self._draws:
-            blue = max(draw.blue, blue)
-            red = max(draw.red, red)
-            blue = max(draw.blue, blue)
-            
-        return prod((blue, red, green))
+        return prod(reduce(lambda a, b: map(max, zip(a, b)), self._draws))
 
     def __repr__(self):
         return f"<Game draws={self._draws.__repr__}>"
