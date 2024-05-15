@@ -4,17 +4,13 @@ open System
 let lines = IO.File.ReadLines("input")
 
 let calculateSum =
-  let getNumber line =
-    let digits = line |> String.filter Char.IsDigit
-    match List.ofArray (digits.ToCharArray()) with
-      | [] -> 0
-      | [d] -> int $"{d}{d}"
-      | first::tail ->
-        let (last::_) = List.rev tail
-        int $"{first}{last}"
+  let toDigits = String.filter Char.IsDigit >> (_.ToCharArray()) >> List.ofArray
+  let getNumber = function
+    | [] -> 0
+    | xs -> int $"{List.head xs}{List.tail xs}"
 
   lines
-  |> Seq.map getNumber
+  |> Seq.map (toDigits >> getNumber)
   |> Seq.fold (+) 0
 
 
